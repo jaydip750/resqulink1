@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ResQLink — Disaster Rescue Priority Network</title>
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+<div class="bg-orbs"><span></span><span></span><span></span></div>
+
+<header class="topbar">
+  <div class="brand">🛟 <b>ResQLink</b><small>offline-first rescue mesh • SIH prototype</small></div>
+  <div class="top-actions">
+    <span id="userChip" class="user-chip hidden"></span>
+    <button id="resetBtn" class="ghost-btn" title="Reset demo">Reset</button>
+  </div>
+</header>
+
+<div class="stepper" id="stepper">
+  <div class="step active" data-s="1"><i>1</i> Register</div>
+  <div class="step" data-s="2"><i>2</i> Role</div>
+  <div class="step" data-s="3"><i>3</i> Emergency</div>
+  <div class="step" data-s="4"><i>4</i> Priority</div>
+</div>
+
+<main class="phone">
+
+  <!-- SCREEN 1 : REGISTRATION -->
+  <section id="screen-register" class="screen active">
+    <div class="hero">
+      <div class="pulse-ring">🆘</div>
+      <h1>ResQLink</h1>
+      <p class="tag">No network? No problem.<br/>SOS over mesh • Smart triage • Live rescue queue</p>
+    </div>
+    <div class="card">
+      <h2>👤 First-time setup <span class="pill">login / register</span></h2>
+      <p class="muted">Fill once when you download the app. This profile is attached to every SOS you send.</p>
+      <div class="grid2">
+        <label>Full name *<input id="f-name" placeholder="e.g. Riya Sharma" /></label>
+        <label>Age *<input id="f-age" type="number" min="1" max="120" placeholder="21" /></label>
+      </div>
+      <div class="grid2">
+        <label>Email *<input id="f-email" type="email" placeholder="you@mail.com" /></label>
+        <label>Phone number *<input id="f-phone" type="tel" placeholder="+91 98765 43210" /></label>
+      </div>
+      <div class="grid2">
+        <label>Gender
+          <select id="f-gender"><option>Female</option><option>Male</option><option>Other</option><option>Prefer not to say</option></select>
+        </label>
+        <label>Blood group
+          <select id="f-blood"><option>A+</option><option>A-</option><option>B+</option><option>B-</option><option>O+</option><option>O-</option><option>AB+</option><option>AB-</option><option>Unknown</option></select>
+        </label>
+      </div>
+      <div class="grid2">
+        <label>Emergency contact *<input id="f-econtact" placeholder="Parent / friend number" /></label>
+        <label>Medical note<input id="f-medical" placeholder="Asthma, allergy…" /></label>
+      </div>
+      <p id="regErr" class="err"></p>
+      <button class="primary" onclick="registerUser()">Create profile & Login →</button>
+      <p class="tiny">🔒 Stored on-device (localStorage). Works offline for SIH demo.</p>
+    </div>
+  </section>
+
+  <!-- SCREEN 2 : ROLE -->
+  <section id="screen-role" class="screen">
+    <div class="card center">
+      <h2>Welcome, <span id="helloName">friend</span> 👋</h2>
+      <p class="muted">You are logged in to <b>ResQLink</b>. Choose how you want to continue:</p>
+      <div class="role-grid">
+        <button class="role-card victim" onclick="pickRole('victim')">
+          <div class="big">🧍‍♀️</div>
+          <h3>I'm a Victim</h3>
+          <p>Need help? Send SOS with smart priority</p>
+          <span class="go">Send SOS →</span>
+        </button>
+        <button class="role-card rescuer" onclick="pickRole('rescuer')">
+          <div class="big">🦺</div>
+          <h3>I'm a Rescuer</h3>
+          <p>View ALL victims & respond</p>
+          <span class="go">Open dashboard →</span>
+        </button>
+      </div>
+      <button class="link" onclick="logout()">← edit profile</button>
+    </div>
+  </section>
+
+  <!-- SCREEN 3 : EMERGENCY CLASSIFICATION -->
+  <section id="screen-emergency" class="screen">
+    <div class="card">
+      <h2>🚨 When you press SOS, select your situation</h2>
+      <p class="muted">3-level emergency classification. Tap one:</p>
+      <div class="sev-grid">
+        <button class="sev critical" onclick="pickSeverity('CRITICAL')">
+          <div class="sev-head">🔴 CRITICAL</div>
+          <ul><li>Medical emergency</li><li>Person trapped</li><li>Multiple victims</li><li>Immediate danger</li><li>No other communication</li></ul>
+          <span class="sev-tag">Life-threatening / trapped / serious medical</span>
+        </button>
+        <button class="sev high" onclick="pickSeverity('HIGH')">
+          <div class="sev-head">🟠 HIGH</div>
+          <ul><li>Lost / stranded</li><li>Injury but stable</li><li>Isolated location</li><li>Long waiting time</li><li>Weak / no network</li></ul>
+          <span class="sev-tag">Injured / lost / unable to reach help</span>
+        </button>
+        <button class="sev normal" onclick="pickSeverity('NORMAL')">
+          <div class="sev-head">🟢 NORMAL</div>
+          <ul><li>Person is safe</li><li>Assistance needed, not urgent</li><li>General location-share request</li></ul>
+          <span class="sev-tag">Safe but needs assistance</span>
+        </button>
+      </div>
+      <table class="mini-table">
+        <tr><th>Emergency type</th><th>Priority</th></tr>
+        <tr><td>🔴 Life-threatening / trapped / serious medical</td><td><b class="c-red">CRITICAL</b></td></tr>
+        <tr><td>🟠 Injured / lost / unable to reach help</td><td><b class="c-orange">HIGH</b></td></tr>
+        <tr><td>🟢 Safe but needs assistance</td><td><b class="c-green">NORMAL</b></td></tr>
+      </table>
+      <button class="link" onclick="go('screen-role')">← back to roles</button>
+    </div>
+  </section>
+
+  <!-- SCREEN 4 : ASSESSMENT -->
+  <section id="screen-assess" class="screen">
+    <div class="card">
+      <h2>📋 Victim assessment <span id="chosenSev" class="pill">—</span></h2>
+      <p class="muted">Hybrid triage: <b>your input</b> + <b>smartphone sensors</b>. Fill condition, capture GPS + heart-rate, then press <b>Calculate Priority</b>.</p>
+
+      <div class="assess-grid">
+        <label class="param">🏥 Physical condition / medical response — <b>high weight</b>
+          <select id="p-condition" onchange="toggleOther('p-condition','p-condition-other')">
+            <option value="unconscious">Unconscious / trapped / severe bleeding</option>
+            <option value="fracture">Fracture / heavy bleeding / breathing issue</option>
+            <option value="stable" selected>Stable injury (sprain, minor cut)</option>
+            <option value="safe">Safe, no injury</option>
+            <option value="other">✏️ Other — describe below</option>
+          </select>
+          <input id="p-condition-other" class="other-box hidden" placeholder="Describe condition, e.g. chest pain + difficulty breathing…" />
+        </label>
+        <label class="param">🧍 Prolonged inactivity — <b>high weight</b>
+          <select id="p-inactivity" onchange="toggleOther('p-inactivity','p-inactivity-other')">
+            <option value="gt30">No movement &gt; 30 min</option>
+            <option value="10to30" selected>No movement 10–30 min</option>
+            <option value="lt10">No movement &lt; 10 min</option>
+            <option value="active">Moving / active</option>
+            <option value="other">✏️ Other — describe below</option>
+          </select>
+          <input id="p-inactivity-other" class="other-box hidden" placeholder="e.g. can move arms only, pinned legs…" />
+        </label>
+        <label class="param">📡 Communication / relay risk — <b>high weight</b>
+          <select id="p-comms" onchange="toggleOther('p-comms','p-comms-other')">
+            <option value="none">No network + no nearby devices (isolated)</option>
+            <option value="weak" selected>Weak signal / 1 relay node</option>
+            <option value="moderate">Moderate (2–3 relay nodes)</option>
+            <option value="good">Good network</option>
+            <option value="other">✏️ Other — describe below</option>
+          </select>
+          <input id="p-comms-other" class="other-box hidden" placeholder="e.g. SMS works but no data, one phone nearby…" />
+        </label>
+        <label class="param">📍 Location context — <b>medium</b> (auto-refined by GPS fix below)
+          <select id="p-location" onchange="toggleOther('p-location','p-location-other')">
+            <option value="isolated">Isolated / forest / hills / basement</option>
+            <option value="rural" selected>Rural / highway / outskirts</option>
+            <option value="urban">Urban, reachable road</option>
+            <option value="other">✏️ Other — describe below</option>
+          </select>
+          <input id="p-location-other" class="other-box hidden" placeholder="e.g. 2nd floor of collapsed building, near river…" />
+        </label>
+        <div class="grid2">
+          <label class="param">⏱️ Waiting time (min) — <b>medium</b><input id="p-wait" type="number" value="25" min="0" max="600" /></label>
+          <label class="param">❤️ Heart-rate (bpm) — <b>supporting</b> <span class="tiny">auto-filled by camera ↓ • normal 60–80</span><input id="p-hr" type="number" value="0" min="0" max="180" /><span id="hrSyncNote" class="tiny hidden" style="color:#15803d;font-weight:700"></span></label>
+        </div>
+        <div class="grid2">
+          <label class="param">🔋 Battery % — <b>supporting</b><input id="p-batt" type="number" value="34" min="0" max="100" /></label>
+          <label class="param">👥 People with you<input id="p-group" type="number" value="1" min="1" max="50" /></label>
+        </div>
+        <div class="sensor-live" id="liveSensors">📡 Reading live sensors… (network • battery)</div>
+        <span id="moveSyncNote" class="tiny hidden" style="color:#15803d;font-weight:700"></span>
+      </div>
+
+      <!-- ===== OFFLINE MOVEMENT MODULE (accelerometer, auto inactivity) ===== -->
+      <div class="mod-card" id="moveCard">
+        <h3><span id="mvDot" style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#64748b"></span> RESQLINK EMERGENCY MONITOR <span class="pill">accelerometer • offline</span></h3>
+        <p class="tiny">Phone motion → movement score → inactivity timer → auto-fills “Prolonged inactivity” above. <b>Supporting indicator only — not a medical diagnosis.</b> Starts only after SOS, stops on cancel. No internet, no GPS, no camera.</p>
+        <div class="loc-grid">
+          <div><small>Movement</small><b id="mvState">⏸ STATIONARY</b></div>
+          <div><small>Movement score</small><b id="mvScore">0 / 100</b></div>
+          <div><small>Inactivity</small><b id="mvInact">No</b></div>
+          <div><small>Inactivity duration</small><b id="mvDur">00:00 (0s)</b></div>
+          <div><small>Possible fall-like event</small><b id="mvFall">No</b></div>
+          <div><small>SOS status</small><b id="mvSos">IDLE</b></div>
+        </div>
+        <div id="mvRaw" class="tiny">raw — • linear — • smooth — • press Start monitoring on a phone.</div>
+        <div id="mvMsg" class="tiny">Not monitoring. Press Start (uses motion permission on iPhone).</div>
+        <div class="row wrap">
+          <button class="ghost-btn dark" onclick="MovementSensorManager.start()">▶ Start monitoring</button>
+          <button class="ghost-btn dark" onclick="MovementSensorManager.stop('stopped by user')">⏸ Stop</button>
+          <button class="ghost-btn dark" onclick="MovementSensorManager.syncToDropdown()">↳ Sync to inactivity dropdown</button>
+        </div>
+        <div class="sim-box">
+          <b>🧪 TEST MODE (no emergency needed — same real algorithm)</b>
+          <div class="tiny">Still → Walk → Shake → Sudden+still. Desktop has no accelerometer, so these feed synthetic motion through the real analyzer.</div>
+          <div class="row wrap">
+            <button class="ghost-btn dark" onclick="MovementTest.run('still')">🪑 Still 10s</button>
+            <button class="ghost-btn dark" onclick="MovementTest.run('walk')">🚶 Walk 10s</button>
+            <button class="ghost-btn dark" onclick="MovementTest.run('shake')">📳 Shake 6s</button>
+            <button class="ghost-btn dark" onclick="MovementTest.run('fall')">⚠️ Sudden + still</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== OFFLINE LOCATION MODULE ===== -->
+      <div class="mod-card" id="locCard">
+        <h3>📍 MY LOCATION <span class="pill">offline GNSS — no internet needed</span></h3>
+        <p class="tiny">GPS/GNSS receiver → phone OS → lat/lon. <b>Maps / internet NOT required</b> for coordinates. GPS finds <i>where you are</i>; BLE/LoRa finds <i>how to send it</i>.</p>
+        <div id="locState" class="loc-state SEARCHING">📍 SEARCHING…</div>
+        <div class="loc-grid">
+          <div><small>Latitude</small><b id="locLat">—</b></div>
+          <div><small>Longitude</small><b id="locLon">—</b></div>
+          <div><small>Accuracy</small><b id="locAcc">—</b></div>
+          <div><small>Quality</small><b id="locQual">—</b></div>
+          <div><small>Confidence</small><b id="locConf">—</b></div>
+          <div><small>Last updated</small><b id="locAge">—</b></div>
+        </div>
+        <div id="locMsg" class="tiny">Press “Get GPS fix”. Keep phone in open area if possible.</div>
+        <div class="row wrap">
+          <button class="ghost-btn dark" onclick="LocationService.requestFix()">📡 Get GPS fix</button>
+          <button class="ghost-btn dark" onclick="LocationService.startTracking()">▶ Track</button>
+          <button class="ghost-btn dark" onclick="LocationService.stopTracking()">⏸ Stop</button>
+          <button class="ghost-btn dark" onclick="LocationService.toggleSim()">🧪 Simulation</button>
+        </div>
+        <div id="locSim" class="hidden sim-box">
+          <b>🧪 DEMO / SIMULATION (not real GPS)</b>
+          <div class="grid2">
+            <label>Lat<input id="sim-lat" type="number" step="0.0001" value="18.1517" /></label>
+            <label>Lon<input id="sim-lon" type="number" step="0.0001" value="74.5777" /></label>
+          </div>
+          <div class="grid2">
+            <label>Accuracy (m)<input id="sim-acc" type="number" value="8" /></label>
+            <label>&nbsp;<button class="ghost-btn dark" onclick="LocationService.applySim()">Simulate fix</button></label>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== HEART RATE MODULE ===== -->
+      <div class="mod-card" id="hrCard">
+        <h3>❤️ Heart-Rate Check <span class="pill">camera + flash PPG • offline</span></h3>
+        <p class="tiny">Victim's smartphone <b>estimates</b> heart rate locally via camera PPG. <b>Estimate only — not a medical diagnosis.</b> No internet, no uploads; frames processed in memory & discarded.</p>
+        <div class="hr-steps">
+          <b>📋 Follow these steps during measurement:</b>
+          <ol>
+            <li>Tap <b>Start measurement</b> → allow <b>Camera access</b> when asked.</li>
+            <li>Place your <b>fingertip fully over the rear camera + flash</b> — cover it completely, no gaps.</li>
+            <li>Keep your finger <b>still & with gentle pressure</b> for the full <b>30 seconds</b>. Don't move, talk, or adjust grip.</li>
+            <li>Keep the phone steady (rest hand on a surface). The <b>flash will turn ON</b> automatically.</li>
+            <li>Watch the live camera preview turn <b>red</b> + the waveform below. Wait for the progress bar to finish.</li>
+          </ol>
+        </div>
+        <div class="hr-top">
+          <div class="hr-bpm"><span id="hrBpm">--</span><small>BPM (estimated)</small></div>
+          <div class="hr-q"><small>Signal quality</small><b id="hrQLabel">---</b><div class="conf-bar"><span id="hrQBar"></span></div><small id="hrState">Press Start — camera will open here.</small></div>
+        </div>
+        <div id="hrCamWrap" class="hr-cam hidden">
+          <video id="hrVideo" playsinline muted autoplay></video>
+          <div class="hr-overlay">👆 fingertip here — cover lens + flash fully</div>
+          <div class="conf-bar"><span id="hrProgBar"></span></div>
+          <small id="hrProgTxt">0s / 30s</small>
+        </div>
+        <div id="hrPerm" class="tiny">🔒 Camera: not requested yet. Permission is asked only when you press Start.</div>
+        <canvas id="ppgCanvas" width="300" height="70" class="ppg"></canvas>
+        <div class="row wrap">
+          <button id="hrStartBtn" class="primary" style="flex:2" onclick="HeartRateService.start()">📷 Start measurement</button>
+          <button class="ghost-btn dark" onclick="HeartRateService.stop()">Stop</button>
+        </div>
+        <div class="row wrap">
+          <select id="hrSimBpm" style="flex:1"><option value="0">Real camera mode</option><option value="64">Simulate 64 BPM</option><option value="72" selected>Simulate 72 BPM</option><option value="78">Simulate 78 BPM</option><option value="95">Simulate 95 BPM (abnormal demo)</option></select>
+          <button class="ghost-btn dark" onclick="HeartRateService.useInSOS()">✓ Use in SOS</button>
+        </div>
+        <div id="hrMsg" class="tiny">Cover camera + flash fully, stay still, ~30 sec. Torch auto-ON/OFF.</div>
+      </div>
+
+      <button class="primary sos" onclick="calculatePriority()">🆘 CALCULATE PRIORITY & SEND SOS</button>
+      <button class="link" onclick="go('screen-emergency')">← change emergency level</button>
+    </div>
+
+    <!-- RESULT -->
+    <div id="resultCard" class="card hidden">
+      <h2>🎯 Triage result</h2>
+      <!-- victim rescue status banner (accept/deny sync) -->
+      <div id="victimStatus" class="status-banner pending">⏳ SOS sent — waiting for rescuer… <button class="ghost-btn dark sm" onclick="refreshVictimStatus()">↻ Check status</button></div>
+      <div class="result-top">
+        <div id="rBadge" class="priority-badge">—</div>
+        <div>
+          <div class="score-line">Final score: <b id="rScore">0</b>/100 &nbsp;•&nbsp; Confidence: <b id="rConf">0%</b></div>
+          <div id="rConfBar" class="conf-bar"><span></span></div>
+          <div id="rMsg" class="muted"></div>
+        </div>
+      </div>
+      <div id="rBreakdown" class="breakdown"></div>
+      <div class="quote">“ResQLink prioritizes SOS primarily by <b>emergency severity</b>, while <b>communication risk + sensor data</b> act as supporting factors — so a low battery alone never overtakes a real critical emergency.”</div>
+      <div class="quote">“ResQLink does not need internet for GPS. The phone's GNSS gives lat/lon locally; BLE/LoRa relays carry the SOS to rescuers.”</div>
+      <div class="conf-table-wrap">
+        <b>Confidence logic</b>
+        <table class="mini-table">
+          <tr><th>User input</th><th>Sensor data</th><th>Confidence</th></tr>
+          <tr><td>Critical</td><td>Matches sensors</td><td>High (85–98%)</td></tr>
+          <tr><td>Critical</td><td>Doesn't match</td><td>Medium (~55–65%, flag verify)</td></tr>
+          <tr><td>Normal</td><td>Sensors show risk</td><td>Auto-escalated ⬆</td></tr>
+        </table>
+      </div>
+      <h3>📦 SOS packet (offline multi-hop)</h3>
+      <pre id="packetPreview" class="packet"></pre>
+      <!-- BLE broadcast -->
+      <div class="mod-card">
+        <h3>📻 BLE Mesh broadcast <span class="pill">TTL • relay • store-forward</span></h3>
+        <div class="grid2">
+          <label>Emergency type
+            <select id="sos-type"><option>MEDICAL</option><option>ACCIDENT</option><option>FIRE</option><option>LOST</option><option>DISASTER</option><option>TRAPPED</option><option>SECURITY</option><option>VEHICLE</option><option>OTHER</option></select>
+          </label>
+          <label>Short message (BLE-friendly, &lt;60 chars)<input id="sos-msg" value="Need help urgently" maxlength="60" /></label>
+        </div>
+        <div class="row wrap">
+          <button class="primary" style="flex:2" onclick="MeshService.broadcast()">📻 BROADCAST SOS via BLE mesh</button>
+          <button class="ghost-btn dark" onclick="MeshService.cancelSOS()">Cancel SOS</button>
+          <button class="ghost-btn dark" onclick="MeshService.markSafe()">✓ Mark safe</button>
+        </div>
+        <div id="meshPath" class="tiny">Not broadcast yet. TTL=10 • flooding + duplicate suppression • critical first.</div>
+        <div class="row wrap">
+          <button class="ghost-btn dark" onclick="go('screen-mesh')">📡 Nearby devices + Mesh status</button>
+          <button class="ghost-btn dark" onclick="go('screen-session')">💬 Rescue session / chat</button>
+        </div>
+      </div>
+      <div class="row">
+        <button class="primary" onclick="pickRole('rescuer')">View as Rescuer 🦺</button>
+        <button class="ghost-btn" onclick="go('screen-assess')">↻ Re-assess</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- SCREEN 5 : RESCUER DASHBOARD -->
+  <section id="screen-rescuer" class="screen">
+    <div class="card">
+      <h2>🦺 Rescuer dashboard <span class="pill live">ALL VICTIMS • LIVE</span></h2>
+      <p class="muted">Every SOS needing help, sorted by priority. Accept or Decline — the victim sees your decision instantly on their screen.</p>
+      <div class="row wrap">
+        <select id="qFilter" onchange="openRescuer()" style="flex:1"><option value="ALL">All requests</option><option value="PENDING">⏳ Pending only</option><option value="CRITICAL">🔴 Critical only</option><option value="ACCEPTED">✅ Accepted</option><option value="DENIED">❌ Declined</option></select>
+        <button class="ghost-btn" onclick="seedDemo()">+ demo victims</button>
+      </div>
+      <div id="queue" class="queue"></div>
+      <div class="row">
+        <button class="ghost-btn" onclick="go('screen-role')">← roles</button>
+        <button class="ghost-btn" onclick="openRescuer()">↻ Refresh</button>
+      </div>
+      <div class="row wrap">
+        <select id="rescAvail" onchange="MeshService.setAvail(this.value)" style="flex:1"><option>AVAILABLE</option><option>BUSY</option><option>RELAY_ONLY</option><option>OFFLINE</option></select>
+        <button class="ghost-btn" onclick="go('screen-mesh')">📡 Mesh status</button>
+        <button class="ghost-btn" onclick="go('screen-session')">💬 Session</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- SCREEN 6 : MESH / NEARBY DEVICES -->
+  <section id="screen-mesh" class="screen">
+    <div class="card">
+      <h2>📡 Nearby ResQLink devices <span class="pill">BLE mesh only</span></h2>
+      <p class="muted">Only ResQLink nodes (<span class="tiny">UUID: RESQLINK-SVC</span>) — headphones/watches ignored. Temp IDs, no MAC exposure. My node: <b id="myNode">—</b></p>
+      <div class="row wrap">
+        <button class="ghost-btn" onclick="MeshService.scan()">🔍 Scan nearby</button>
+        <button class="ghost-btn" onclick="MeshService.toggleNet()">🌐 <span id="netLabel">Offline (mesh)</span></button>
+        <button class="ghost-btn" onclick="MeshService.syncNow()">⇅ Sync now</button>
+      </div>
+      <div id="nodeList" class="queue"></div>
+    </div>
+    <div class="card">
+      <h2>🛜 Mesh status</h2>
+      <div id="meshStatus" class="tiny">—</div>
+      <h3>📜 Logs</h3>
+      <pre id="meshLog" class="packet" style="max-height:220px"></pre>
+    </div>
+    <div class="row wrap">
+      <button class="ghost-btn" onclick="go('screen-rescuer')">← Rescuer</button>
+      <button class="ghost-btn" onclick="go('screen-assess')">← Victim</button>
+    </div>
+  </section>
+
+  <!-- SCREEN 7 : RESCUE SESSION / CHAT -->
+  <section id="screen-session" class="screen">
+    <div class="card">
+      <h2>💬 Rescue session <span id="sessId" class="pill">—</span></h2>
+      <div id="sessInfo" class="tiny">Accept an SOS to open a secure session (victim ↔ mesh ↔ rescuer).</div>
+      <div id="chatBox" class="chat"></div>
+      <div class="row">
+        <input id="chatIn" placeholder="Type message…" style="flex:3" />
+        <button class="ghost-btn" style="flex:1" onclick="MeshService.sendChat()">Send</button>
+      </div>
+      <div class="row wrap">
+        <button class="ghost-btn" onclick="MeshService.setSessStatus('ARRIVED')">📍 Arrived</button>
+        <button class="ghost-btn" onclick="MeshService.setSessStatus('COMPLETED')">✅ Completed</button>
+        <button class="ghost-btn" onclick="go('screen-rescuer')">← queue</button>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="foot">ResQLink • Severity + Comms risk + Sensor fusion • GPS works offline • Camera-PPG is an estimate, not a diagnosis</footer>
+<script src="movement.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
